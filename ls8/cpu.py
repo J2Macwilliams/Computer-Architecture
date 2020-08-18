@@ -11,6 +11,7 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
+        self.mar = 0
         self.running = True
         
 
@@ -72,7 +73,7 @@ class CPU:
         # set variables
         LDI = 0b10000010
         PRN = 0b01000111
-        HLT 0b00000001
+        HLT = 0b00000001
 
         isRunning = True
 
@@ -87,17 +88,17 @@ class CPU:
             # operand b
             operand_b = self.pc + 2
             
-            op_size
+            op_size = 1
 
             # loops thru if/elif checks and returns something
             if cmd == LDI: #HLT
-                item = self.read(operand_b)
-                self.ram_write(self.pc, item)
+                item = self.ram_read(operand_b)
+                self.reg[self.mar] = item
                 op_size = 3
             elif cmd == PRN:
-                item = self.read(operand_b)
-                print(item)
-                op_size += 2
+                found = self.reg[self.mar]
+                print(found)
+                op_size = 2
             elif cmd == HLT:
                 isRunning = False
                 op_size = 1
@@ -107,12 +108,12 @@ class CPU:
 
     def ram_read(self, mar):
         """Read from the Ram"""
-        # MDR
+        # MAR
         return self.ram[mar]
         
         
 
     def ram_write(self, mar, mdr):
-        """Read from the Ram"""
-        # MAR
+        """Read / write from/to the Ram"""
+        # MDR
         self.ram[mar] = mdr
