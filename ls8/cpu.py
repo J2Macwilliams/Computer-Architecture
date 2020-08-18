@@ -43,7 +43,9 @@ class CPU:
             self.reg[reg_a] += self.reg[reg_b]
         elif op == "SUB":
             self.reg[reg_a] -= self.reg[reg_b]
-        elif op == "MULT":
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
+        elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
         
         else:
@@ -89,20 +91,21 @@ class CPU:
             # operand b
             operand_b = self.pc + 2
             
-            op_size = 1
-
+            # op_size = 1
+            op_size = (cmd >> 6) + 1
+            alu_op = (cmd >>) 
             # loops thru if/elif checks and returns something
             if cmd == LDI: #HLT
                 item = self.ram_read(operand_b)
                 self.reg[self.mar] = item
-                op_size = 3
+                # op_size = 3
             elif cmd == PRN:
                 found = self.reg[self.mar]
                 print(found)
-                op_size = 2
+                # op_size = 2
             elif cmd == HLT:
                 isRunning = False
-                op_size = 1
+                # op_size = 1
 
             self.pc += op_size
         
