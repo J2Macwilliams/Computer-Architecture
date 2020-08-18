@@ -15,36 +15,37 @@ class CPU:
         self.running = True
         
 
-    def load(self):
+    def load(self, filename):
         """Load a program into memory."""
+        try:
+            address = 0
+            with open(filename) as f:
+                for line in f:
+                    comment_split = line.split('#')
+                    n = comment_split[0].strip()
+                    if n == '':
+                        continue
+                    val = int(n ,2)
+                    # store the val in ram
+                    self.ram[address] = val
 
-        address = 0
+                    # increment the address
+                    address += 1
 
-
-        # For now, we've just hardcoded a program:
-
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
-
-        for instruction in program:
-            self.ram[address] = instruction
-            # loads the ram with instructions
-            address += 1
-
-
+        except FileNotFoundError:
+            print(f"{sys.argv[0]}: {filename} not found")
+            sys.exit(2)
+        
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        #elif op == "SUB": etc
+        elif op == "SUB":
+            self.reg[reg_a] -= self.reg[reg_b]
+        elif op == "MULT":
+            self.reg[reg_a] *= self.reg[reg_b]
+        
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -70,10 +71,10 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        # set variables
+        # set Operations
         LDI = 0b10000010
         PRN = 0b01000111
-        HLT = 0b00000001
+        HLT = 1
 
         isRunning = True
 
