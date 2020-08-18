@@ -77,6 +77,11 @@ class CPU:
         LDI = 0b10000010
         PRN = 0b01000111
         HLT = 1
+        ADD = 160
+        SUB = 161
+        MUL = 162
+        DIV = 163
+        
 
         isRunning = True
 
@@ -93,30 +98,46 @@ class CPU:
             
             # op_size = 1
             op_size = (cmd >> 6) + 1
-            alu_op = (cmd >>) 
+            # alu_operations
+            # alu_op = (cmd >> 5) 
+
             # loops thru if/elif checks and returns something
             if cmd == LDI: #HLT
-                item = self.ram_read(operand_b)
-                self.reg[self.mar] = item
-                # op_size = 3
+                num_to_save = self.ram[operand_b] # 300
+                reg_index = self.ram[operand_a]
+                self.reg[reg_index] = num_to_save
+                
             elif cmd == PRN:
-                found = self.reg[self.mar]
-                print(found)
-                # op_size = 2
+                index_of_reg = self.ram[operand_a]
+                num_at_reg = self.reg[index_of_reg]
+                print(num_at_reg)
             elif cmd == HLT:
                 isRunning = False
-                # op_size = 1
+            elif cmd == ADD:
+                a_reg_index = self.ram[operand_a]
+                b_reg_index = self.ram[operand_b]
+                self.reg[a_reg_index] += self.reg[b_reg_index]
+            elif cmd == SUB:
+                a_reg_index = self.ram[operand_a]
+                b_reg_index = self.ram[operand_b]
+                self.reg[a_reg_index] -= self.reg[b_reg_index]
+            elif cmd == MUL:
+                a_reg_index = self.ram[operand_a]
+                b_reg_index = self.ram[operand_b]
+                self.reg[a_reg_index] *= self.reg[b_reg_index]
+            elif cmd == DIV:
+                a_reg_index = self.ram[operand_a]
+                b_reg_index = self.ram[operand_b]
+                self.reg[a_reg_index] /= self.reg[b_reg_index]
 
             self.pc += op_size
-        
+            
 
     def ram_read(self, mar):
         """Read from the Ram"""
         # MAR
         return self.ram[mar]
         
-        
-
     def ram_write(self, mar, mdr):
         """Read / write from/to the Ram"""
         # MDR
