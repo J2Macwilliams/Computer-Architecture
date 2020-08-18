@@ -7,12 +7,19 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        # create the ram, registers and program-counter
+        self.ram = [0] * 256
+        self.reg = [0] * 8
+        self.pc = 0
+        self.mar = 0
+        self.running = True
+        
 
     def load(self):
         """Load a program into memory."""
 
         address = 0
+
 
         # For now, we've just hardcoded a program:
 
@@ -28,6 +35,7 @@ class CPU:
 
         for instruction in program:
             self.ram[address] = instruction
+            # loads the ram with instructions
             address += 1
 
 
@@ -62,4 +70,50 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        # set variables
+        LDI = 0b10000010
+        PRN = 0b01000111
+        HLT = 0b00000001
+
+        isRunning = True
+
+        
+        while isRunning:
+            # Fetch
+            cmd = self.ram_read(self.pc)
+            # Decode
+            
+            # operand a
+            operand_a = self.pc + 1
+            # operand b
+            operand_b = self.pc + 2
+            
+            op_size = 1
+
+            # loops thru if/elif checks and returns something
+            if cmd == LDI: #HLT
+                item = self.ram_read(operand_b)
+                self.reg[self.mar] = item
+                op_size = 3
+            elif cmd == PRN:
+                found = self.reg[self.mar]
+                print(found)
+                op_size = 2
+            elif cmd == HLT:
+                isRunning = False
+                op_size = 1
+
+            self.pc += op_size
+        
+
+    def ram_read(self, mar):
+        """Read from the Ram"""
+        # MAR
+        return self.ram[mar]
+        
+        
+
+    def ram_write(self, mar, mdr):
+        """Read / write from/to the Ram"""
+        # MDR
+        self.ram[mar] = mdr
