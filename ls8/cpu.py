@@ -97,8 +97,7 @@ class CPU:
 
             # op_size = 1
             op_size = ((cmd >> 6) & 0b11) + 1
-            # alu_operations
-            # alu_op = (cmd >> 5)
+            
 
             # loops thru if/elif checks and returns something
             if cmd == LDI:  # HLT
@@ -116,24 +115,16 @@ class CPU:
                 isRunning = False
             elif cmd == ADD:
                 self.alu('ADD', operand_a, operand_b)
-                # a_reg_index = self.ram[operand_a]
-                # b_reg_index = self.ram[operand_b]
-                # self.reg[a_reg_index] += self.reg[b_reg_index]
+                
             elif cmd == SUB:
                 self.alu('SUB', operand_a, operand_b)
-                # a_reg_index = self.ram[operand_a]
-                # b_reg_index = self.ram[operand_b]
-                # self.reg[a_reg_index] -= self.reg[b_reg_index]
+                
             elif cmd == MUL:
                 self.alu('MUL', operand_a, operand_b)
-                # a_reg_index = self.ram[operand_a]
-                # b_reg_index = self.ram[operand_b]
-                # self.reg[a_reg_index] *= self.reg[b_reg_index]
+                
             elif cmd == DIV:
                 self.alu('DIV', operand_a, operand_b)
-                # a_reg_index = self.ram[operand_a]
-                # b_reg_index = self.ram[operand_b]
-                # self.reg[a_reg_index] /= self.reg[b_reg_index]
+                
 
             self.pc += op_size
 
