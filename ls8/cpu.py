@@ -77,17 +77,23 @@ class CPU:
     def run(self):
         """Run the CPU."""
         # set Operations
-        LDI = 0b10000010
-        PRN = 0b01000111
+        LDI = 130
+        PRN = 71
         HLT = 1
         ADD = 160
         SUB = 161
         MUL = 162
         DIV = 163
+        PUSH = 69
+        POP = 70
 
-        isRunning = True
+        # Stack Pointer (SP)
+        SP = 7
+        # set the SP to F2 or 243 on self.ram
+        self.reg[SP] = 243
 
-        while isRunning:
+        
+        while self.running:
             # Fetch
             cmd = self.ram_read(self.pc)
             # Decode
@@ -102,17 +108,13 @@ class CPU:
             # loops thru if/elif checks and returns something
             if cmd == LDI:  # HLT
                 self.reg[operand_a] = operand_b
-                # num_to_save = self.ram[operand_b]  # 300
-                # reg_index = self.ram[operand_a]
-                # self.reg[reg_index] = num_to_save
+                
 
             elif cmd == PRN:
                 print(self.reg[operand_a])
-                # index_of_reg = self.ram[operand_a]
-                # num_at_reg = self.reg[index_of_reg]
-                # print(num_at_reg)
+                
             elif cmd == HLT:
-                isRunning = False
+                self.running = False
             elif cmd == ADD:
                 self.alu('ADD', operand_a, operand_b)
                 
@@ -124,7 +126,28 @@ class CPU:
                 
             elif cmd == DIV:
                 self.alu('DIV', operand_a, operand_b)
+            
+            elif cmd == PUSH:
+                # grab value fro the register
+                val = self.reg[operand_a]
+
+                # decrement Stack Pointer
+                self.reg[SP] -= 1
+
+                # add val to the stack
+                self.ram[self.reg[SP]] = val
+
                 
+            elif cmd == POP:
+                # setup
+                val = self.ram[self.reg[SP]] 
+
+                # take value from stack and put it in reg
+                self.reg[operand_a] = val
+
+                # increment the SP
+                self.reg[SP] += 1
+
 
             self.pc += op_size
 
