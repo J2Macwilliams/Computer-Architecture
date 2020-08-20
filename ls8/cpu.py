@@ -86,6 +86,8 @@ class CPU:
         DIV = 163
         PUSH = 69
         POP = 70
+        CALL = 80
+        RET = 17
 
         # Stack Pointer (SP)
         SP = 7
@@ -147,6 +149,23 @@ class CPU:
 
                 # increment the SP
                 self.reg[SP] += 1
+            
+            elif cmd == CALL:
+                # push return address onto Stack
+                self.reg[SP] -= 1
+                self.ram[self.reg[SP]] = self.pc + 2
+                
+                # set PC to the sub routines address
+                self.pc = self.reg[operand_a]
+
+                op_size = 0
+
+            elif cmd == RET:
+                # POP returns from the stack the address for pc
+                self.pc = self.ram[self.reg[SP]]
+                self.reg[SP] += 1
+
+                op_size = 0
 
 
             self.pc += op_size
