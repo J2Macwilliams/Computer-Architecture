@@ -51,6 +51,21 @@ class CPU:
         elif op == "DIV":
             self.reg[reg_a] /= self.reg[reg_b]
 
+        elif op == "OR":
+            self.reg[reg_a] | self.reg[reg_b]
+
+        elif op == "XOR":
+            self.reg[reg_a] ^ self.reg[reg_b]
+
+        elif op == "SHL":
+            self.reg[reg_a] <<= self.reg[reg_b]
+
+        elif op == "SHR":
+            self.reg[reg_a] >>= self.reg[reg_b]
+
+        # elif op == "NOT":
+        #     self.reg[reg_a] ~ self.reg[reg_b]
+
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -88,13 +103,19 @@ class CPU:
         POP = 70
         CALL = 80
         RET = 17
+        PRA = 72
+        OR = 170
+        SHL = 172
+        SHR = 173
+        XOR = 171
+        NOT = 105
+        JMP = 84
 
         # Stack Pointer (SP)
         SP = 7
         # set the SP to F2 or 243 on self.ram
         self.reg[SP] = 243
 
-        
         while self.running:
             # Fetch
             cmd = self.ram_read(self.pc)
@@ -105,30 +126,52 @@ class CPU:
 
             # op_size = 1
             op_size = ((cmd >> 6) & 0b11) + 1
-            
 
             # loops thru if/elif checks and returns something
             if cmd == LDI:  # HLT
                 self.reg[operand_a] = operand_b
-                
 
-            elif cmd == PRN:
-                print(self.reg[operand_a])
-                
             elif cmd == HLT:
                 self.running = False
+
+            elif cmd == JMP:
+                self.pc = self.reg[operand_a]
+            
+            # Printing
+            elif cmd == PRN:
+                print(self.reg[operand_a])
+            elif cmd == PRA:
+                print(ord(self.reg[operand_a]))
+            
+            # ALU
+            elif cmd == SHL:
+                self.alu('SHL', operand_a, operand_b)
+
+            elif cmd == SHR:
+                self.alu('SHR', operand_a, operand_b)
+
+            # elif cmd == NOT:
+            #     self.alu('NOT', operand_a, operand_b)
+
+            elif cmd == OR:
+                self.alu('OR', operand_a, operand_b)
+
+            elif cmd == XOR:
+                self.alu('XOR', operand_a, operand_b)
+
             elif cmd == ADD:
                 self.alu('ADD', operand_a, operand_b)
-                
+
             elif cmd == SUB:
                 self.alu('SUB', operand_a, operand_b)
-                
+
             elif cmd == MUL:
                 self.alu('MUL', operand_a, operand_b)
-                
+
             elif cmd == DIV:
                 self.alu('DIV', operand_a, operand_b)
-            
+
+            # Call Stack
             elif cmd == PUSH:
                 # grab value fro the register
                 val = self.reg[operand_a]
@@ -139,22 +182,22 @@ class CPU:
                 # add val to the stack
                 self.ram[self.reg[SP]] = val
 
-                
             elif cmd == POP:
                 # setup
-                val = self.ram[self.reg[SP]] 
+                val = self.ram[self.reg[SP]]
 
                 # take value from stack and put it in reg
                 self.reg[operand_a] = val
 
                 # increment the SP
                 self.reg[SP] += 1
-            
+
+            # Sub-Routines
             elif cmd == CALL:
                 # push return address onto Stack
                 self.reg[SP] -= 1
                 self.ram[self.reg[SP]] = self.pc + 2
-                
+
                 # set PC to the sub routines address
                 self.pc = self.reg[operand_a]
 
@@ -166,7 +209,6 @@ class CPU:
                 self.reg[SP] += 1
 
                 op_size = 0
-
 
             self.pc += op_size
 
