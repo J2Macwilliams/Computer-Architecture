@@ -134,8 +134,8 @@ class CPU:
             elif cmd == HLT:
                 self.running = False
 
-            elif cmd == JMP:
-                self.pc = self.reg[operand_a]
+            # elif cmd == JMP:
+            #     self.pc = self.reg[operand_a]
             
             # Printing
             elif cmd == PRN:
