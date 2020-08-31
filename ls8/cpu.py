@@ -11,8 +11,10 @@ class CPU:
         # create the ram, registers and program-counter
         self.ram = [0] * 256
         self.reg = [0] * 8
+        self.checking = False
         self.pc = 0
         self.mar = 0
+        self.flag = 0b00000000
         self.running = True
 
     def load(self, filename):
@@ -52,10 +54,10 @@ class CPU:
             self.reg[reg_a] /= self.reg[reg_b]
 
         elif op == "OR":
-            self.reg[reg_a] | self.reg[reg_b]
+            self.reg[reg_a] |= self.reg[reg_b]
 
         elif op == "XOR":
-            self.reg[reg_a] ^ self.reg[reg_b]
+            self.reg[reg_a] ^= self.reg[reg_b]
 
         elif op == "SHL":
             self.reg[reg_a] <<= self.reg[reg_b]
@@ -63,8 +65,22 @@ class CPU:
         elif op == "SHR":
             self.reg[reg_a] >>= self.reg[reg_b]
 
+        elif op == 'MOD':
+            self.reg[reg_a] %= self.reg[reg_b]
+
+        elif op == "CMP":
+            
+            if self.reg[reg_a] == self.reg[reg_b]:
+                self.flag = 0b00000001 
+               
+            elif self.reg[reg_a] < self.reg[reg_b]:
+                self.flag = 0b00000100
+                
+            elif self.reg[reg_a] > self.reg[reg_b]:
+                self.flag = 0b00000010
+                
         # elif op == "NOT":
-        #     self.reg[reg_a] ~ self.reg[reg_b]
+        #     self.reg[reg_a] ~= self.reg[reg_b]
 
         else:
             raise Exception("Unsupported ALU operation")
@@ -93,23 +109,36 @@ class CPU:
         """Run the CPU."""
         # set Operations
         LDI = 130
-        PRN = 71
         HLT = 1
+        JMP = 84
+        # Printing
+        PRN = 71
+        PRA = 72
+        # Stack
+        PUSH = 69
+        POP = 70
+        # Sub-Routines
+        CALL = 80
+        RET = 17
+        # ALU
         ADD = 160
         SUB = 161
         MUL = 162
         DIV = 163
-        PUSH = 69
-        POP = 70
-        CALL = 80
-        RET = 17
-        PRA = 72
+        MOD = 164
         OR = 170
         SHL = 172
         SHR = 173
         XOR = 171
         NOT = 105
-        JMP = 84
+        # Flags
+        CMP = 167
+        JEQ = 85
+        JNE = 86
+        # JGE = 90
+        # JGT = 87
+        # JLE = 89
+        # JLT = 88
 
         # Stack Pointer (SP)
         SP = 7
@@ -118,61 +147,109 @@ class CPU:
 
         while self.running:
             # Fetch
-            cmd = self.ram_read(self.pc)
+            ir = self.ram_read(self.pc)
             # Decode
 
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
             # op_size = 1
-            op_size = ((cmd >> 6) & 0b11) + 1
+            op_size = ((ir >> 6) & 0b11) + 1
+            # stop the loop
+            self.checking = ((ir >> 4) & 0b1) == 1
 
             # loops thru if/elif checks and returns something
-            if cmd == LDI:  # HLT
+            if ir == LDI:  # HLT
                 self.reg[operand_a] = operand_b
 
-            elif cmd == HLT:
+            elif ir == HLT:
                 self.running = False
 
-            # elif cmd == JMP:
-            #     self.pc = self.reg[operand_a]
+            elif ir == JMP:
+                self.pc = self.reg[operand_a]
+                
+
+            # Flags
+            elif ir == CMP:
+                self.alu('CMP', operand_a, operand_b)
+                
+            elif ir == JEQ:
+                if self.flag == 0b00000001:
+                    self.pc = self.reg[operand_a]
+                    
+                else:
+                    self.checking = False
+            elif ir == JNE:
+                
+                if not self.flag & 0b00000001:
+                    self.pc = self.reg[operand_a]
+                    
+                else:
+                    self.checking = False
+                
+                    
+
+            # elif ir == JGE:
+            #     if self.flag == 1 or self.flag == 1:
+            #         self.pc = self.reg[operand_a]
+            #         op_size = 0
+
+            # elif ir == JGT:
+            #     if self.flag == 1:
+            #         self.pc = self.reg[operand_a]
+            #         op_size = 0
+
+            # elif ir == JLE:
+            #     if self.flag == 1 or self.flag == 1:
+            #         self.pc = self.reg[operand_a]
+            #         op_size = 0
+
+            # elif ir == JLT:
+            #     if self.flag == 1:
+            #         self.pc = self.reg[operand_a]
+            #         op_size = 0
             
+        
             # Printing
-            elif cmd == PRN:
+            elif ir == PRN:
                 print(self.reg[operand_a])
-            elif cmd == PRA:
+            elif ir == PRA:
                 print(ord(self.reg[operand_a]))
             
             # ALU
-            elif cmd == SHL:
+            elif ir == SHL:
                 self.alu('SHL', operand_a, operand_b)
 
-            elif cmd == SHR:
+            elif ir == SHR:
                 self.alu('SHR', operand_a, operand_b)
 
-            # elif cmd == NOT:
+            # elif ir == NOT:
             #     self.alu('NOT', operand_a, operand_b)
 
-            elif cmd == OR:
+            elif ir == OR:
                 self.alu('OR', operand_a, operand_b)
 
-            elif cmd == XOR:
+            elif ir == XOR:
                 self.alu('XOR', operand_a, operand_b)
 
-            elif cmd == ADD:
+            elif ir == ADD:
                 self.alu('ADD', operand_a, operand_b)
 
-            elif cmd == SUB:
+            elif ir == SUB:
                 self.alu('SUB', operand_a, operand_b)
 
-            elif cmd == MUL:
+            elif ir == MUL:
                 self.alu('MUL', operand_a, operand_b)
 
-            elif cmd == DIV:
+            elif ir == DIV:
                 self.alu('DIV', operand_a, operand_b)
+            
+            elif ir == MOD:
+                self.alu('MOD', operand_a, operand_b)
 
+            
             # Call Stack
-            elif cmd == PUSH:
+            elif ir == PUSH:
                 # grab value fro the register
                 val = self.reg[operand_a]
 
@@ -182,7 +259,7 @@ class CPU:
                 # add val to the stack
                 self.ram[self.reg[SP]] = val
 
-            elif cmd == POP:
+            elif ir == POP:
                 # setup
                 val = self.ram[self.reg[SP]]
 
@@ -193,7 +270,7 @@ class CPU:
                 self.reg[SP] += 1
 
             # Sub-Routines
-            elif cmd == CALL:
+            elif ir == CALL:
                 # push return address onto Stack
                 self.reg[SP] -= 1
                 self.ram[self.reg[SP]] = self.pc + 2
@@ -203,14 +280,16 @@ class CPU:
 
                 op_size = 0
 
-            elif cmd == RET:
+            elif ir == RET:
                 # POP returns from the stack the address for pc
                 self.pc = self.ram[self.reg[SP]]
                 self.reg[SP] += 1
 
                 op_size = 0
 
-            self.pc += op_size
+            
+            if not self.checking:
+                self.pc += op_size
 
     def ram_read(self, mar):
         """Read from the Ram"""
